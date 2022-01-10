@@ -1,57 +1,88 @@
-const operation_pool = {
+const operation_pool: { [key: string]: Operation } = {
   '+': {
     calc: (a: number, b: number) => a + b,
-    predicate: (a: number, b: number) => true
+    predicate: (a: number, b: number) => true,
+    operand_num: 2
   },
   '-': {
     calc: (a: number, b: number) => a - b,
-    predicate: (a: number, b: number) => true
+    predicate: (a: number, b: number) => true,
+    operand_num: 2
   },
   '*': {
     calc: (a: number, b: number) => a * b,
-    predicate: (a: number, b: number) => true
+    predicate: (a: number, b: number) => true,
+    operand_num: 2
   },
   '/': {
     calc: (a: number, b: number) => a / b,
-    predicate: (a: number, b: number) => b !== 0
+    predicate: (a: number, b: number) => b !== 0,
+    operand_num: 2
   },
   gcd: {
     calc: (a: number, b: number) => gcd(a, b),
-    predicate: (a: number, b: number) => true
+    predicate: (a: number, b: number) =>
+      Number.isInteger(a) && Number.isInteger(b),
+    operand_num: 2
   },
   power: {
     calc: (a: number, b: number) => Math.pow(a, b),
-    predicate: (a: number, b: number) => true
+    predicate: (a: number, b: number) => true,
+    operand_num: 2
   },
   '//': {
     calc: (a: number, b: number) => Math.floor(a / b),
-    predicate: (a: number, b: number) => b !== 0
+    predicate: (a: number, b: number) =>
+      b !== 0 && Number.isInteger(a) && Number.isInteger(b),
+    operand_num: 2
   },
   mod: {
     calc: (a: number, b: number) => a % b,
     predicate: (a: number, b: number) =>
-      b !== 0 && Number.isInteger(a) && Number.isInteger(b)
+      b !== 0 && Number.isInteger(a) && Number.isInteger(b),
+    operand_num: 2
   },
   comb: {
     calc: (a: number, b: number) => combinations(a, b),
     predicate: (a: number, b: number) =>
-      Number.isInteger(a) && Number.isInteger(b)
+      Number.isInteger(a) && Number.isInteger(b),
+    operand_num: 2
   },
   xor: {
     calc: (a: number, b: number) => a ^ b,
     predicate: (a: number, b: number) =>
-      Number.isInteger(a) && Number.isInteger(b)
+      Number.isInteger(a) && Number.isInteger(b),
+    operand_num: 2
+  },
+  sqrt: {
+    calc: (a: number) => Math.floor(Math.sqrt(a)),
+    predicate: (a: number) => a >= 0,
+    operand_num: 1
+  },
+  '!': {
+    calc: (a: number) => product_range(1, a),
+    predicate: (a: number) => Number.isInteger(a),
+    operand_num: 1
+  },
+  'a^2': {
+    calc: (a: number) => a * a,
+    predicate: (a: number) => true,
+    operand_num: 1
   }
 }
 
-type Operation = keyof typeof operation_pool
+interface Operation {
+  calc: (...args: Array<number>) => number
+  predicate: (...args: Array<number>) => boolean
+  operand_num: number
+}
 
 const gcd = (a: number, b: number): number => {
   if (!b) return a
   return gcd(b, a % b)
 }
 
-function product_Range(a: number, b: number) {
+function product_range(a: number, b: number) {
   let prd = a
   let i = a
   while (i++ < b) prd *= i
@@ -63,7 +94,7 @@ function combinations(n: number, r: number) {
     return 1
   } else {
     r = r < n - r ? n - r : r
-    return Math.floor(product_Range(r + 1, n) / product_Range(1, n - r))
+    return Math.floor(product_range(r + 1, n) / product_range(1, n - r))
   }
 }
 
@@ -87,9 +118,8 @@ export const generate_problem = (
   operation_number = 4,
   target_number = 24
 ) => {
-  let counter = 5000
-  while (counter--) {
-    const all_operations = Object.keys(operation_pool) as Array<Operation>
+  while (true) {
+    const all_operations = Object.keys(operation_pool)
     shuffle(all_operations)
     shuffle(poker_deck)
     const operations = all_operations.slice(0, card_number)
@@ -102,36 +132,55 @@ export const generate_problem = (
     if (is_exist) {
       return { operations, cards, solution }
     }
-    console.log(counter)
   }
-  return { operations: [], cards: [], solution: [] }
 }
 
 export const check_solution_exists = (
-  operations: Array<Operation>,
+  operations: Array<string>,
   cards: Array<number>,
   target_number = 24
 ) => {
   let cur: Array<string> = []
-  const checker = (cur_cards: Array<number>) => {
+  const MAX_VALUE = 5000
+  const MAX_DEPTH = 5
+  const all_operations = Object.keys(operation_pool)
+  const checker = (cur_cards: Array<number>, depth = 0) => {
+    // console.log(cur)
     if (cur_cards.length === 1) {
       return Math.abs(cur_cards[0] - target_number) < Number.EPSILON
     }
-    for (let i = 0; i < cur_cards.length; i++) {
-      for (let j = i + 1; j < cur_cards.length; j++) {
-        const remaining = cur_cards.filter(
-          (value, index) => i !== index && j !== index
-        )
-        for (const [x, y] of [
-          [cur_cards[i], cur_cards[j]],
-          [cur_cards[j], cur_cards[i]]
-        ]) {
-          for (const op of operations) {
-            if (operation_pool[op].predicate(x, y)) {
-              const result = operation_pool[op].calc(x, y)
-              cur.push(`${x} ${op} ${y} = ${result}`)
-              if (checker(remaining.concat([result]))) return true
-              cur.pop()
+    if (depth > MAX_DEPTH) return false
+    shuffle(all_operations)
+    for (const op of all_operations) {
+      if (operation_pool[op].operand_num === 1) {
+        for (let i = 0; i < cur_cards.length; i++) {
+          const remaining = cur_cards.filter((_, index) => i !== index)
+          const x = cur_cards[i]
+          if (operation_pool[op].predicate(x)) {
+            const result = operation_pool[op].calc(x)
+            if (result > MAX_VALUE || result === x) continue
+            cur.push(`${op} ${x} = ${result}`)
+            if (checker(remaining.concat([result]), depth + 1)) return true
+            cur.pop()
+          }
+        }
+      } else if (operation_pool[op].operand_num === 2) {
+        for (let i = 0; i < cur_cards.length; i++) {
+          for (let j = i + 1; j < cur_cards.length; j++) {
+            const remaining = cur_cards.filter(
+              (_, index) => i !== index && j !== index
+            )
+            for (const [x, y] of [
+              [cur_cards[i], cur_cards[j]],
+              [cur_cards[j], cur_cards[i]]
+            ]) {
+              if (operation_pool[op].predicate(x, y)) {
+                const result = operation_pool[op].calc(x, y)
+                if (result > MAX_VALUE) continue
+                cur.push(`${x} ${op} ${y} = ${result}`)
+                if (checker(remaining.concat([result]), depth + 1)) return true
+                cur.pop()
+              }
             }
           }
         }
