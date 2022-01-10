@@ -124,15 +124,60 @@ export const generate_problem = (
     shuffle(poker_deck)
     const operations = all_operations.slice(0, card_number)
     const cards = poker_deck.slice(0, operation_number)
-    const { is_exist, solution } = check_solution_exists(
+    const { is_exist, solution, solution_detail } = check_solution_exists(
       operations,
       cards,
       target_number
     )
     if (is_exist) {
-      return { operations, cards, solution }
+      return { operations, cards, solution, solution_detail }
     }
   }
+}
+
+export const parse_solution = (solution: Array<Array<string | number>>) => {
+  if (solution.length === 0) return solution
+  solution.reverse()
+  let res: Array<string | number> = []
+  const target = solution[0][1]
+  for (const [op, result, ...rest] of solution) {
+    let index = -1
+    for (let i = 0; i < res.length; i++) {
+      if (res[i] === result) {
+        index = i
+        break
+      }
+    }
+    if (index === -1) {
+      if (rest.length === 1) {
+        res.push(op, rest[0])
+      } else {
+        res.push(rest[0], op, rest[1])
+      }
+    } else {
+      if (rest.length === 1) {
+        res.splice(index, 1, '(', op, rest[0], ')')
+      } else {
+        res.splice(index, 1, '(', rest[0], op, rest[1], ')')
+      }
+    }
+  }
+  solution.reverse() // keep it unchanged
+  res.push('=', target)
+  return res.join(' ')
+}
+
+export const parse_detail = (solution: Array<Array<string | number>>) => {
+  if (solution.length === 0) return solution
+  let res: Array<string> = []
+  for (const [op, result, ...rest] of solution) {
+    if (rest.length === 1) {
+      res.push(`${op} ${rest[0]} = ${result}`)
+    } else {
+      res.push(`${rest[0]} ${op} ${rest[1]} = ${result}`)
+    }
+  }
+  return res
 }
 
 export const check_solution_exists = (
@@ -140,11 +185,10 @@ export const check_solution_exists = (
   cards: Array<number>,
   target_number = 24
 ) => {
-  let cur: Array<string> = []
+  let cur: Array<Array<string | number>> = []
   const MAX_VALUE = 5000
   const MAX_DEPTH = 5
   const checker = (cur_cards: Array<number>, depth = 0) => {
-    // console.log(cur)
     if (cur_cards.length === 1) {
       return Math.abs(cur_cards[0] - target_number) < Number.EPSILON
     }
@@ -158,7 +202,7 @@ export const check_solution_exists = (
           if (operation_pool[op].predicate(x)) {
             const result = operation_pool[op].calc(x)
             if (result > MAX_VALUE || result === x) continue
-            cur.push(`${op} ${x} = ${result}`)
+            cur.push([op, result, x])
             if (checker(remaining.concat([result]), depth + 1)) return true
             cur.pop()
           }
@@ -176,7 +220,7 @@ export const check_solution_exists = (
               if (operation_pool[op].predicate(x, y)) {
                 const result = operation_pool[op].calc(x, y)
                 if (result > MAX_VALUE) continue
-                cur.push(`${x} ${op} ${y} = ${result}`)
+                cur.push([op, result, x, y])
                 if (checker(remaining.concat([result]), depth + 1)) return true
                 cur.pop()
               }
@@ -187,5 +231,9 @@ export const check_solution_exists = (
     }
     return false
   }
-  return { is_exist: checker(cards), solution: cur }
+  return {
+    is_exist: checker(cards),
+    solution: parse_solution(cur),
+    solution_detail: parse_detail(cur)
+  }
 }

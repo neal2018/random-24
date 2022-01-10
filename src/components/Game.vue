@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, reactive, toRaw } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { generate_problem } from '../composables/generator'
-// defineProps<{ msg: string }>()
+
 const problem_data = reactive(generate_problem())
-let history = [
-  {
-    operations: problem_data.operations,
-    cards: problem_data.cards,
-    solution: problem_data.solution
-  }
-]
+let history = [Object.assign({}, problem_data)]
 let cur_history = 0
 const is_show = ref(false)
 const counter = ref(0)
@@ -17,36 +11,28 @@ setInterval(() => counter.value++, 1000)
 const time_str = computed(() =>
   new Date(counter.value * 1000).toTimeString().substring(3, 8)
 )
-const update = (
-  operations: typeof problem_data.operations,
-  cards: typeof problem_data.cards,
-  solution: typeof problem_data.solution
-) => {
-  problem_data.operations = operations
-  problem_data.cards = cards
-  problem_data.solution = solution
+const update = (new_problem: typeof problem_data) => {
+  Object.assign(problem_data, new_problem)
   counter.value = 0
   is_show.value = false
 }
 const new_one = () => {
-  const { operations, cards, solution } = generate_problem()
-  update(operations, cards, solution)
+  const new_problem = generate_problem()
+  update(new_problem)
   while (history.length > cur_history + 1) history.pop()
-  history.push({ operations, cards, solution })
+  history.push(Object.assign({}, new_problem))
   cur_history++
 }
 const rollback = () => {
   if (cur_history === 0) return
-  const { operations, cards, solution } = history[--cur_history]!!
-  update(operations, cards, solution)
+  update(history[--cur_history]!!)
 }
 const forward = () => {
   if (cur_history === history.length - 1) {
     new_one()
     return
   }
-  const { operations, cards, solution } = history[++cur_history]!!
-  update(operations, cards, solution)
+  update(history[++cur_history]!!)
 }
 </script>
 
@@ -79,6 +65,9 @@ const forward = () => {
     </p>
     <p v-if="is_show">
       <code>{{ problem_data.solution }}</code>
+    </p>
+    <p v-if="is_show">
+      <code>{{ problem_data.solution_detail }}</code>
     </p>
     <button
       class="triangle_left hover:cursor-pointer absolute top-20 left-0"
