@@ -45,7 +45,7 @@ const operation_pool: { [key: string]: Operation } = {
   comb: {
     calc: (a: number, b: number) => combinations(a, b),
     predicate: (a: number, b: number) =>
-      Number.isInteger(a) && Number.isInteger(b),
+      Number.isInteger(a) && Number.isInteger(b) && a >= b && b >= 0,
     operand_num: 2
   },
   xor: {
