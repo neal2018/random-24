@@ -15,6 +15,7 @@ const update = () => {
   problem_data.cards = cards
   problem_data.solution = solution
   counter.value = 0
+  is_show.value = false
 }
 </script>
 
