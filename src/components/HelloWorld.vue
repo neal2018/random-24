@@ -7,32 +7,35 @@ const is_show = ref(false)
 </script>
 
 <template>
-  <p>
-    <code>{{ operations }}</code>
-  </p>
-  <p>
-    <code>{{ cards }}</code>
-  </p>
-  <button class="font-mono" @click="is_show = !is_show">
-    {{ is_show ? 'hide' : 'show' }} solution
-  </button>
-  <p v-if="is_show">{{ solution }}</p>
+  <div class="bg-slate-800">
+    <p>
+      <code>{{ operations }}</code>
+    </p>
+    <p>
+      <code>{{ cards }}</code>
+    </p>
+    <button
+      class="font-mono bg-blue-gray-500 rounded-lg border-0 hover:cursor-pointer m-3"
+      @click="is_show = !is_show"
+    >
+      {{ is_show ? 'hide' : 'show' }} solution
+    </button>
+    <p v-if="is_show">
+      <code>{{ solution }}</code>
+    </p>
+  </div>
 </template>
 
 <style scoped>
-* {
+p,
+button {
   font-size: 40px;
 }
 
-label {
-  margin: 0 0.5em;
-  font-weight: bold;
-}
-
 code {
-  background-color: #eee;
+  /* background-color: #eee; */
   padding: 2px 4px;
   border-radius: 4px;
-  color: #304455;
+  color: #d4d4d4;
 }
 </style>

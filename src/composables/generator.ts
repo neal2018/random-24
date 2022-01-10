@@ -87,7 +87,7 @@ export const generate_problem = (
   operation_number = 4,
   target_number = 24
 ) => {
-  let counter = 1000
+  let counter = 5000
   while (counter--) {
     const all_operations = Object.keys(operation_pool) as Array<Operation>
     shuffle(all_operations)
@@ -102,6 +102,7 @@ export const generate_problem = (
     if (is_exist) {
       return { operations, cards, solution }
     }
+    console.log(counter)
   }
   return { operations: [], cards: [], solution: [] }
 }
