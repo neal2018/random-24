@@ -20,7 +20,7 @@ const operation_pool: { [key: string]: Operation } = {
     operand_num: 2
   },
   gcd: {
-    calc: (a: number, b: number) => gcd(a, b),
+    calc: (a: number, b: number) => gcd(Math.abs(a), Math.abs(b)),
     predicate: (a: number, b: number) =>
       Number.isInteger(a) && Number.isInteger(b),
     operand_num: 2
