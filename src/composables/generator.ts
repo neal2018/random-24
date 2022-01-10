@@ -54,14 +54,9 @@ const operation_pool: { [key: string]: Operation } = {
       Number.isInteger(a) && Number.isInteger(b),
     operand_num: 2
   },
-  sqrt: {
-    calc: (a: number) => Math.floor(Math.sqrt(a)),
-    predicate: (a: number) => a >= 0,
-    operand_num: 1
-  },
   '!': {
     calc: (a: number) => product_range(1, a),
-    predicate: (a: number) => Number.isInteger(a),
+    predicate: (a: number) => Number.isInteger(a) && a >= 0,
     operand_num: 1
   },
   'a^2': {
@@ -143,15 +138,14 @@ export const check_solution_exists = (
   let cur: Array<string> = []
   const MAX_VALUE = 5000
   const MAX_DEPTH = 5
-  const all_operations = Object.keys(operation_pool)
   const checker = (cur_cards: Array<number>, depth = 0) => {
     // console.log(cur)
     if (cur_cards.length === 1) {
       return Math.abs(cur_cards[0] - target_number) < Number.EPSILON
     }
     if (depth > MAX_DEPTH) return false
-    shuffle(all_operations)
-    for (const op of all_operations) {
+    shuffle(operations)
+    for (const op of operations) {
       if (operation_pool[op].operand_num === 1) {
         for (let i = 0; i < cur_cards.length; i++) {
           const remaining = cur_cards.filter((_, index) => i !== index)
