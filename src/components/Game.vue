@@ -81,11 +81,11 @@ const forward = () => {
       <code>{{ problem_data.solution }}</code>
     </p>
     <button
-      class="triangle_left hover:cursor-pointer absolute top-20 -left-15"
+      class="triangle_left hover:cursor-pointer absolute top-20 left-0"
       @click="rollback"
     ></button>
     <button
-      class="triangle_right hover:cursor-pointer absolute top-20 -right-15"
+      class="triangle_right hover:cursor-pointer absolute top-20 right-0"
       @click="forward"
     ></button>
   </div>
