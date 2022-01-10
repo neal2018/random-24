@@ -65,7 +65,7 @@ const operation_pool: { [key: string]: Operation } = {
     operand_num: 1
   },
   avg: {
-    calc: (a: number, b: number) => (a + b)/2,
+    calc: (a: number, b: number) => (a + b) / 2,
     predicate: (a: number, b: number) => true,
     operand_num: 2
   }
