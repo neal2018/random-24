@@ -2,7 +2,7 @@
 import { ref, computed, reactive } from 'vue'
 import { generate_problem } from '../composables/generator'
 // defineProps<{ msg: string }>()
-const data = reactive(generate_problem())
+const problem_data = reactive(generate_problem())
 const is_show = ref(false)
 const counter = ref(0)
 setInterval(() => counter.value++, 1000)
@@ -11,9 +11,9 @@ const time_str = computed(() =>
 )
 const update = () => {
   const { operations, cards, solution } = generate_problem()
-  data.operations = operations
-  data.cards = cards
-  data.solution = solution
+  problem_data.operations = operations
+  problem_data.cards = cards
+  problem_data.solution = solution
   counter.value = 0
 }
 </script>
@@ -21,10 +21,10 @@ const update = () => {
 <template>
   <div class="bg-slate-800">
     <p>
-      <code>{{ data.operations }}</code>
+      <code>{{ problem_data.operations }}</code>
     </p>
     <p>
-      <code>{{ data.cards }}</code>
+      <code>{{ problem_data.cards }}</code>
     </p>
     <p>
       <button class="font-mono bg-blue-gray-500 rounded-lg border-0 px-3 mt-10">
@@ -46,7 +46,7 @@ const update = () => {
       </button>
     </p>
     <p v-if="is_show">
-      <code>{{ data.solution }}</code>
+      <code>{{ problem_data.solution }}</code>
     </p>
   </div>
 </template>
